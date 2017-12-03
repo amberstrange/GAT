@@ -13,6 +13,7 @@ from gat.view.upload import upload_blueprint
 from gat.view.visualize import visualize_blueprint
 from gat.view.out import out_blueprint
 from gat.view.security import security_blueprint
+from gat.view.cases import cases_blueprint
 
 application = Flask(__name__)
 application.register_blueprint(log_blueprint, url_prefix='/log')
@@ -24,6 +25,7 @@ application.register_blueprint(sna_blueprint)
 application.register_blueprint(gsa_blueprint)
 application.register_blueprint(out_blueprint)
 application.register_blueprint(security_blueprint)
+application.register_blueprint(cases_blueprint)
 
 #################
 #### Running ####

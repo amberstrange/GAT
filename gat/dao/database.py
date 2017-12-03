@@ -25,7 +25,8 @@ def execute(command, dql):
 def connect():
     connection = None
     try:
-        params = config.config("/home/nikita/Projects/GAT/static/resources/security/database_config.ini", "postgresql")
+        # TODO might have a problem here
+        params = config.config("static/resources/security/database_config.ini", "postgresql")
         connection = psycopg2.connect(**params)
     except:
         raise Exception("Error connecting to database.")

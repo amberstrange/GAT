@@ -1,5 +1,6 @@
 import random
 import string
+from datetime import timedelta
 
 from flask import Blueprint, render_template, request, redirect, url_for, make_response
 
@@ -17,18 +18,22 @@ def login_get():
 
 @security_blueprint.route('/login', methods=['POST'])
 def login_post():
-    if 'session_id' in request.cookies:
-        if security_service.getEmail(request.cookies.get('session_id')) is not None:
+    #TODO double check this works when you already have a cookie
+    # if the person is already logged in:
+    case_num = -1
+    if 'case_num' in request.cookies:
+        case_num = request.cookies.get("case_num")
+        if security_service.getEmail(case_num) is not None:
+            print("REDIRECTING TO VISUALIZE RIGHT AWAY")
+            io_service.loadDict(request.form.get('email'), case_num)
             return redirect(url_for('visualize_blueprint.visualize'))
-    success = security_service.login(request.form.get("email"), request.form.get("password"))
+    else:
+        case_num = dao.makeCaseNum()
+
+    success = security_service.login(request.form.get("email"), request.form.get("password"), case_num)
     if success:
         response = make_response(redirect(url_for('visualize_blueprint.visualize')))
-        session_id = 100000 + random.randint(0, 100000)
-        response.set_cookie('session_id', str(session_id), max_age = 1)
-        case_num = request.cookies.get('case_num', None)
-        if case_num is None:
-            case_num = 100000 + random.randint(0, 100000)
-            response.set_cookie('case_num', str(case_num), max_age = 1)
+        response.set_cookie('case_num', str(case_num), max_age=timedelta(days=1))
         io_service.loadDict(request.form.get('email'), case_num)
 
         return response
@@ -37,10 +42,11 @@ def login_post():
 @security_blueprint.route('/logout')
 def logout():
     case_num = request.cookies.get('case_num')
-    email = security_service.getEmail(request.cookies.get('session_id'))
+    email = security_service.getEmail(case_num)
     io_service.storeFiles(case_num, email)
     response = make_response(redirect(url_for("upload_blueprint.landing_page")))
-    response.set_cookie('session_id', '', expires_days=0)
+    response.set_cookie('case_num', '', expires=0)
+    security_service.logout(case_num)
     return response
 
 
@@ -57,6 +63,7 @@ def register_post():
         send_email.send_confirmation(request.form.get("email"), path)
         data = security_service.getData(request.form.get("email"))
         security_service.createDirectory(data[0])
+
         return render_template('confirm.html', confirm = False)
     return render_template('register.html', error = True)
 
@@ -71,15 +78,16 @@ def confirm_email():
 
 @security_blueprint.route('/save')
 def save_data():
+    # used in the case if we have a save button somewhere
     case_num = request.cookies.get('case_num', None)
-    email = security_service.getEmail(request.cookies.get('session_id'))
+    email = security_service.getEmail(case_num)
     if email is not None:
-        uidpk = security_service.getData(email)
+        uidpk = security_service.getData(email)[0]
         security_service.createDirectory(uidpk)
-        io_service.storeFiles(uidpk, case_num)
+        io_service.storeFiles(case_num, email)
     pass
 
-'''@security_blueprint.route('/forgot_password')
+@security_blueprint.route('/forgot_password')
 def forgot_password():
     pass
 
@@ -90,4 +98,6 @@ def update_preferences_post():
 @security_blueprint.route('/update_preferences', methods = ['GET'])
 def update_preferences_get():
     pass
-'''
+
+
+#TODO work on saving and loading stuff

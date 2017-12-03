@@ -1,6 +1,6 @@
 CREATE TABLE t_session (
     uidpk           integer PRIMARY KEY,
-    session_id      integer,
+    case_num     integer,
     email           varchar(40),
-    time_stamp      timestamp
+    time_stamp timestamp default current_timestamp
 );

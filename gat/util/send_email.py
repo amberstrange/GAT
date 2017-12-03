@@ -13,8 +13,8 @@ def send_confirmation(address, path):
 
     msg = MIMEMultipart('alternative')
     msg['Subject'] = "Confirm Your GAT Email"
-    msg['From'] = "kuzema7@gmail.com"
-    msg['To'] = "nikita.zemlevskiy@duke.edu"
+    msg['From'] = "csslucas65@gmail.com"
+    msg['To'] = address
     # msg['From'] = "noreply@gat.org"
     # msg['To'] = address
     url = readInfo("site")['url']
@@ -22,13 +22,18 @@ def send_confirmation(address, path):
         'You have just created your account for GAT! Please confirm your email by clicking on the following link or pasting it into your browser: ' + url + path)
     msg.attach(mime_text)
 
-    s = smtplib.SMTP(info['email_host'], info['email_port'])
+    #s = smtplib.SMTP(info['email_host'], info['email_port'])
+    s = smtplib.SMTP('smtp.gmail.com:587')
+    s.ehlo()
     s.starttls()
-    s.login(info['email_host_user'], info['email_host_password'])
-    s.sendmail("kuzema7@gmail.com", "nikita.zemlevskiy@duke.edu", msg.as_string())
-    # s.sendmail("noreply@gat.org", address, msg.as_string())
+    s.login("csslucas65@gmail.com", "Lucas517!")
+    s.sendmail("csslucas65@gmail.com", address, msg.as_string())
+    #s.sendmail("noreply@gat.org", address, msg.as_string())
+    s.send_message(msg)
     s.quit()
 
 
+
+
 def readInfo(section):
-    return config.config("/home/nikita/Projects/GAT/static/resources/security/database_config.ini", section)
+    return config.config("static/resources/security/database_config.ini", section)
