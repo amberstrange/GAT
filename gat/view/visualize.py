@@ -1,9 +1,9 @@
 import copy
-
+import gc
 from flask import Blueprint, render_template, request
 
 from gat.dao import dao
-from gat.service import scraper_service, sna_service, gsa_service, nlp_service, security_service, io_service
+from gat.service import scraper_service, sna_service, gsa_service, nlp_service, security_service, io_service, NLP_TO_NETWORK
 
 visualize_blueprint = Blueprint('visualize_blueprint', __name__)
 
@@ -21,6 +21,7 @@ def visualize():
     NLP_dir = fileDict.get('NLP_Input_corpus')
     NLP_urls = fileDict.get('NLP_LDP_terms')
     NLP_file_sentiment = fileDict.get('NLP_Input_Sentiment')
+    NLP_new_example_file = fileDict.get('NLP_New_Example')
     research_question = fileDict.get('research_question')
     tropes = fileDict.get('tropes')
     graph = fileDict.get('graph')
@@ -43,15 +44,16 @@ def visualize():
     if (GSA_file_CSV is not None and GSA_file_SHP is not None and fileDict.get('GSA_meta') is not None):
         gsaCSV, mymap, nameMapping = gsa_service.tempParseGSA(GSA_file_CSV, GSA_file_SHP, fileDict['GSA_meta'][0],
                                                               fileDict['GSA_meta'][1])
-    if GSA_file_SVG != None:
+    if GSA_file_SVG is not None:
         gsaCSV, mymap = gsa_service.parseGSA(GSA_file_CSV, GSA_file_SVG)
 
-    if gsaCSV == None and mymap == True:
+    if gsaCSV is None and mymap == True:
         error = True
         mymap = None
 
     sna_service.prep(graph)
     jgdata, SNAbpPlot, attr, systemMeasures = sna_service.SNA2Dand3D(graph, request, case_num, _2D=True)
+    fileDict['SNAbpPlot'] = '/' + SNAbpPlot if SNAbpPlot is not None else None
     copy_of_graph = copy.deepcopy(graph)
 
     if NLP_dir:
@@ -122,6 +124,12 @@ def visualize():
     if security_service.isLoggedIn(case_num):
         email = security_service.getEmail(case_num)
         io_service.saveDict(email, case_num)
+    nlp_new_example_sentiment = ''
+    nlp_new_example_relationship = ''
+    if NLP_new_example_file is not None:
+        nlp_new_example_sentiment = NLP_TO_NETWORK.sentiment_mining(NLP_new_example_file)
+        nlp_new_example_relationship = NLP_TO_NETWORK.relationship_mining(NLP_new_example_file)
+        nlp_summary = 'Enable'
 
     return render_template('visualizations.html',
                            research_question=research_question,
@@ -145,5 +153,8 @@ def visualize():
                            nlp_entities=nlp_entities,
                            nlp_sources=nlp_sources,
                            nlp_tropes=nlp_tropes,
-                           systemMeasures=systemMeasures
+                           systemMeasures=systemMeasures,
+                           NLP_new_example_file=NLP_new_example_file,
+                           nlp_new_example_sentiment=nlp_new_example_sentiment,
+                           nlp_new_example_relationship=nlp_new_example_relationship,
                            )

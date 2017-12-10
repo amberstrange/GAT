@@ -1,9 +1,3 @@
-.ebextensions
-# Elastic Beanstalk Files
-.elasticbeanstalk/*
-!.elasticbeanstalk/*.cfg.yml
-!.elasticbeanstalk/*.global.yml
-
 *.pyc
 .idea/*
 *.pem
@@ -12,3 +6,4 @@ static/temp/*
 .DS_Store
 out/*
 data/*
+/gat/service/SmartSearch/chromedriver
