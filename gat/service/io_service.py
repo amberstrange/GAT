@@ -23,8 +23,11 @@ from gat.service import security_service
 tempdir = 'out/generated/'
 
 
-def storefile(inFile, email):
-    tempdir ='out/generated/' if email is None else 'data/' + str(security_service.getData(email)[0][0]) + '/'
+def storefile(inFile, email, case_num):
+    fileDict = dao.getFileDict(case_num)
+    # print(fileDict)
+    tempdir = 'out/generated/' if email is None else 'data/' + str(security_service.getData(email)[0][0]) + '/' + \
+                                                     fileDict['case_name'] + '/'
 
     if inFile is None or inFile.filename == '':
         return
@@ -37,8 +40,11 @@ def storefile(inFile, email):
     return f.name
 
 
-def storeNLP(file_list, email):
-    tempdir ='out/generated/' if email is None else 'data/' + str(security_service.getData(email)[0][0]) + '/'
+def storeNLP(file_list, email, case_num):
+    fileDict = dao.getFileDict(case_num)
+    # print(fileDict)
+    tempdir = 'out/generated/' if email is None else 'data/' + str(security_service.getData(email)[0][0]) + '/' + \
+                                                     fileDict['case_name'] + '/'
 
     if len(file_list) == 0 or file_list[0].filename == '':
         return
@@ -50,8 +56,12 @@ def storeNLP(file_list, email):
     return source_dir
 
 
-def storeGSA(file_list, email):
-    tempdir ='out/generated/' if email is None else 'data/' + str(security_service.getData(email)[0][0]) + '/'
+def storeGSA(file_list, email, case_num):
+    fileDict = dao.getFileDict(case_num)
+    # print(fileDict)
+    tempdir = 'out/generated/' if email is None else 'data/' + str(security_service.getData(email)[0][0]) + '/' + \
+                                                     fileDict['case_name'] + '/'
+
 
     # saves everything but only returns the shapefile. Nice
     if len(file_list) == 0 or file_list[0].filename == '':
@@ -107,49 +117,47 @@ def checkExtensions(case_num):
 
 
 def storeFiles(case_num, email, files = None):
-    tempDir ='out/generated/' if email is None else 'data/' + str(security_service.getData(email)[0][0]) + '/'
-    print(tempDir   )
+    #tempDir ='out/generated/' if email is None else 'data/' + str(security_service.getData(email)[0][0]) + '/'
+    #print(tempDir   )
     print(email)
     print(str(security_service.getData(email)[0][0]))
     fileDict = dao.getFileDict(case_num)
-    if files is not None:
-        fileDict['GSA_Input_CSV'] = storefile(files.get('GSA_Input_CSV'), email)
-        fileDict['GSA_Input_SHP'] = storeGSA(files.getlist('GSA_Input_map'), email)
-        fileDict['NLP_Input_corpus'] = storeNLP(files.getlist('NLP_Input_corpus'), email)
-        fileDict['NLP_Input_LDP'] = storefile(files.get('NLP_Input_LDP'), email)
-        fileDict['NLP_Input_Sentiment'] = storefile(files.get('NLP_Input_Sentiment'), email)
-
-
-        fileDict['SNA_Input'] = storefile(files.get('SNA_Input'), email)
-        fileDict['GSA_Input'] = storefile(files.get('GSA_Input'), email)
     print(fileDict)
+    print(fileDict)
+    tempDir ='out/generated/' if email is None else 'data/' + str(security_service.getData(email)[0][0]) + '/' + fileDict['case_name'] +'/'
+
+    if files is not None:
+        fileDict['GSA_Input_CSV'] = storefile(files.get('GSA_Input_CSV'), email, case_num)
+        fileDict['GSA_Input_SHP'] = storeGSA(files.getlist('GSA_Input_map'), email, case_num)
+        fileDict['NLP_Input_corpus'] = storeNLP(files.getlist('NLP_Input_corpus'), email, case_num)
+        fileDict['NLP_Input_LDP'] = storefile(files.get('NLP_Input_LDP'), email, case_num)
+        fileDict['NLP_Input_Sentiment'] = storefile(files.get('NLP_Input_Sentiment'), email, case_num)
+
+
+        fileDict['SNA_Input'] = storefile(files.get('SNA_Input'), email, case_num)
+        fileDict['GSA_Input'] = storefile(files.get('GSA_Input'), email, case_num)
     if email is not None:
         with open(tempDir + 'fileDict.pickle', 'wb+') as file:
             pickle.dump(fileDict, file)
-        with open(tempDir + 'fileDict.pickle', 'rb') as file:
-            print(pickle.load(file), "saved this dictionary!!!!!")
 
-
-def loadDict(email, case_num):
+def loadDict(email, case_num, case_name):
     #todo check if the dictionary actually exists
-
     if email is not None:
         uidpk = security_service.getData(email)[0][0]
-        if os.path.exists('data/' + str(uidpk) + '/fileDict.pickle'):
-            with open('data/' + str(uidpk) + '/fileDict.pickle', 'rb') as file:
+        if os.path.exists('data/' + str(uidpk) + '/' + case_name +'/'):
+            with open('data/' + str(uidpk) + '/' + case_name +'/fileDict.pickle', 'rb') as file:
                 dao.setFileDict(pickle.load(file), case_num)
+                dao.updateFileDict(case_num, "case_name", case_name)
 
 
 
 def saveDict(email, case_num):
     if security_service.isLoggedIn(case_num):
-
+        fileDict = dao.getFileDict(case_num)
         if email is not None:
             uidpk = security_service.getData(email)[0][0]
-            if os.path.exists('data/' + str(uidpk)+ '/fileDict.pickle'):
-                with open('data/' + str(uidpk) + '/fileDict.pickle', 'wb') as file:
-                    print("why is not this saving")
-                    print(dao.getFileDict(case_num))
+            if os.path.exists('data/' + str(security_service.getData(email)[0][0]) + '/' + fileDict['case_name'] +'/'):
+                with open('data/' + str(security_service.getData(email)[0][0]) + '/' + fileDict['case_name'] +'/fileDict.pickle', 'wb') as file:
                     pickle.dump(dao.getFileDict(case_num), file)
 
 

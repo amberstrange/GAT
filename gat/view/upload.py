@@ -13,7 +13,6 @@ upload_blueprint = Blueprint('upload_blueprint', __name__)
 @upload_blueprint.route('/', methods=['POST'])
 def upload():
     case_num = request.cookies.get('case_num', None)
-    print("CASENUM", case_num)
     fileDict = dao.getFileDict(case_num)
 
     fileDict['research_question'] = request.form.get('smartsearch')

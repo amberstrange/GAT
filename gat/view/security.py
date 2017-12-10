@@ -25,7 +25,7 @@ def login_post():
         case_num = request.cookies.get("case_num")
         if security_service.getEmail(case_num) is not None:
             print("REDIRECTING TO VISUALIZE RIGHT AWAY")
-            io_service.loadDict(request.form.get('email'), case_num)
+            #io_service.loadDict(request.form.get('email'), case_num)
             return redirect(url_for('visualize_blueprint.visualize'))
     else:
         case_num = dao.makeCaseNum()
@@ -34,7 +34,7 @@ def login_post():
     if success:
         response = make_response(redirect(url_for('visualize_blueprint.visualize')))
         response.set_cookie('case_num', str(case_num), max_age=timedelta(days=1))
-        io_service.loadDict(request.form.get('email'), case_num)
+        #io_service.loadDict(request.form.get('email'), case_num)
 
         return response
     return render_template('login.html', error = True)

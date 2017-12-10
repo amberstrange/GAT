@@ -7,19 +7,15 @@ def login(email, password, case_num):
     result = database.execute(
         "SELECT * FROM T_ACCOUNT WHERE EMAIL = '{0}' AND PASSWORD_HASH = crypt('{1}', PASSWORD_HASH) AND CONFIRMED = TRUE;".format(
             email, password), True)
-    print("TRYING TO LOG IN ")
-    print(result)
     answer = result is not None and len(result) == 1
 
     if answer:
-        print("ADDED LINE TO T_SESSION")
         uidpk_result = database.execute("SELECT MAX(UIDPK) FROM T_SESSION;", True)
         uidpk = int(uidpk_result[0][0]) + 1 if uidpk_result[0][0] is not None else 1
         database.execute(
             "INSERT INTO T_SESSION (UIDPK, CASE_NUM, EMAIL) VALUES ({0},'{1}','{2}');"
                 .format(uidpk, case_num, result[0][1]), False)
-        io_service.loadDict(email, case_num)
-        print("LOADED DICT AND CASE_NUM", case_num)
+        #io_service.loadDict(email, case_num)
     return answer
 
 
@@ -48,7 +44,10 @@ def createDirectory(uidpk):
     uidpk = str(uidpk[0])
     if not os.path.exists('data/' + uidpk):
         os.makedirs('data/' + uidpk)
-
+def addCaseFolder(case_name, uidpk):
+    uidpk = str(uidpk)
+    if not os.path.exists('data/' + uidpk + '/' + case_name):
+        os.makedirs('data/' + uidpk + '/' + case_name)
 
 def getData(email):
     return database.execute("SELECT * FROM T_ACCOUNT WHERE EMAIL = '{0}';".format(email), True)
@@ -58,7 +57,6 @@ def getEmail(case_num):
     result = None
     if case_num is not None:
         result = database.execute("SELECT * FROM T_SESSION WHERE CASE_NUM = {0};".format(case_num), True)
-        print(result)
     return result[0][2] if (result is not None and len(result) > 0) else None
 
 def isLoggedIn(case_num):

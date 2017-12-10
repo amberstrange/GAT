@@ -3,18 +3,17 @@ import copy
 from flask import Blueprint, render_template, request
 
 from gat.dao import dao
-from gat.service import scraper_service, sna_service, gsa_service, nlp_service, security_service
+from gat.service import scraper_service, sna_service, gsa_service, nlp_service, security_service, io_service
 
 visualize_blueprint = Blueprint('visualize_blueprint', __name__)
 
 
 @visualize_blueprint.route('/visualize', methods=['GET', 'POST'])
 def visualize():
+
     case_num = request.cookies.get('case_num', None)
-
-
+    case_name = request.args.get('case_name')
     fileDict = dao.getFileDict(case_num)
-    print(fileDict , "filedict loaded")
 
     GSA_file_CSV = fileDict.get('GSA_Input_CSV')
     GSA_file_SHP = fileDict.get('GSA_Input_SHP')
@@ -64,8 +63,10 @@ def visualize():
     research_question = scraper_service.scrape(research_question)
 
 
-    if security_service.isLoggedIn(case_num):
-            return render_template('visualizations.html',
+    if not case_name:
+        email = security_service.getEmail(case_num)
+        io_service.saveDict(email, case_num)
+        return render_template('visualizations.html',
                                research_question=research_question,
                                SNAbpPlot=SNAbpPlot,
                                graph=copy_of_graph,
@@ -118,8 +119,9 @@ def visualize():
     fileDict["nlp_sources"] = nlp_sources,
     fileDict["nlp_tropes"] = nlp_tropes,
     fileDict["systemMeasures"] = systemMeasures
-
-    #todo save filedict here
+    if security_service.isLoggedIn(case_num):
+        email = security_service.getEmail(case_num)
+        io_service.saveDict(email, case_num)
 
     return render_template('visualizations.html',
                            research_question=research_question,

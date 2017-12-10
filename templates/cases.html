@@ -5,6 +5,14 @@
     <title>Title</title>
 </head>
 <body>
-
+<form action="{{url_for('cases_blueprint.post_cases')}}" method = post>
+  <select name="cases">
+    {% for option in case_options%}
+    <option value="{{option}}">"{{option}}"</option>
+    {% endfor %}
+  </select>
+  <br><br>
+  <input type="submit"/>
+</form>
 </body>
 </html>
