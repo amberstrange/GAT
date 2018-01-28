@@ -71,7 +71,6 @@ from gat.view.smart_search import smart_search_blueprint
             redirect goes to the specified URL, and runs its associated python method
 
 '''
->>>>>>> 45dcb6defcba52dde8adb8daf3ccedb1b457ff34
 application = Flask(__name__)
 application.register_blueprint(log_blueprint, url_prefix='/log')
 application.register_blueprint(info_blueprint)

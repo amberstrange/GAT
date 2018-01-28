@@ -130,6 +130,7 @@ def visualize():
         nlp_new_example_sentiment = NLP_TO_NETWORK.sentiment_mining(NLP_new_example_file)
         nlp_new_example_relationship = NLP_TO_NETWORK.relationship_mining(NLP_new_example_file)
         nlp_summary = 'Enable'
+    print(fileDict)
 
     return render_template('visualizations.html',
                            research_question=research_question,

@@ -157,7 +157,7 @@ def get_node_data():
 
 @sna_blueprint.route("/_get_edge_data")
 def get_edge_data():
-    case_num = request.args.get('case_num', None)
+    case_num = request.cookies.get('case_num', None)
     fileDict = dao.getFileDict(case_num)
     graph = fileDict.get('copy_of_graph')
     name = request.args.get('name', '', type=str)
@@ -173,7 +173,7 @@ def get_edge_data():
 
 @sna_blueprint.route("/_subgraph_viz")
 def subgraph_viz():
-    case_num = request.args.get('case_num', None)
+    case_num = request.cookies.get('case_num', None)
     fileDict = dao.getFileDict(case_num)
     centralNode = request.args.get('centralNode', '', type=str)
     toJson = {}
@@ -186,7 +186,7 @@ def subgraph_viz():
 
 @sna_blueprint.route("/_sentiment_change")
 def view_sent_change():
-    case_num = request.args.get('case_num', None)
+    case_num = request.cookies.get('case_num', None)
     fileDict = dao.getFileDict(case_num)
     response = fileDict["SentimentChange"]
     return render_template("sentiment_change.html",

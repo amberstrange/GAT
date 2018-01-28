@@ -22,6 +22,8 @@ class SNA():
         self.subAttrs = ["W", "SENT", "SZE", "AMT"]
         self.header, self.list = self.readFile(excel_file, nodeSheet)
         if attrSheet != None:
+            print("SNA SHEET IS NOT NONE ")
+            # self. attrList is undefined sometimes and attrSheet is set to none
             self.attrHeader, self.attrList = self.readFile(excel_file, attrSheet)
         self.G = nx.DiGraph()
         self.nodes = []

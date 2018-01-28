@@ -26,7 +26,7 @@ def login_post():
         if security_service.getEmail(case_num) is not None:
             print("REDIRECTING TO VISUALIZE RIGHT AWAY")
             #io_service.loadDict(request.form.get('email'), case_num)
-            return redirect(url_for('visualize_blueprint.visualize'))
+            return redirect(url_for('cases_blueprint.get_cases'))
     else:
         case_num = dao.makeCaseNum()
 
